@@ -15,8 +15,13 @@ struct HomeView: View{
             homeBackgroundGradient
                 .ignoresSafeArea()
             VStack{
-                
+                Image("StartMedia")
+                lightHomeBackgroundGradient
+                    .ignoresSafeArea()
             }
+            Text("Start Workout")
+                .font(.title2)
+                .fontWeight(.bold)
         }
     }
 }

@@ -14,7 +14,7 @@ struct StartView: View {
             backgroundGradient
                 .ignoresSafeArea()
             VStack{
-                Image("StartMedia")// by icons8
+                Image("AppLogo")
                 Text("Restless") // title
                     .font(.title)
                     .bold(true)
