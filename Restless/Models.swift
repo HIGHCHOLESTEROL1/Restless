@@ -6,10 +6,11 @@
 //
 
 import SwiftUI
+// accent color for most buttons, icons, basic color of the system
 
 // default starter background
 let backgroundGradient = LinearGradient(
-    colors: [Color.blue, Color.purple],
+    colors: [Color.blue, Color.accent, Color.purple],
     startPoint: .top, endPoint: .bottom
     )
 

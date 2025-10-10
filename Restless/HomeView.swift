@@ -7,6 +7,10 @@
 
 import SwiftUI
 
+// action to start workout
+func startWorkout(){
+    print("start workout pressed") // testing purposes
+}
 
 // base home view
 struct HomeView: View{
@@ -19,13 +23,33 @@ struct HomeView: View{
                 lightHomeBackgroundGradient
                     .ignoresSafeArea()
             }
-            Text("Start Workout")
-                .font(.title2)
-                .fontWeight(.bold)
+            VStack (alignment: .leading) {
+                Text("Welcome, Brian!")
+                    .font(.title)
+                    .fontWeight(.bold)
+                
+                // button to start a untemplated workout
+                Button(action: startWorkout)
+                {
+                    // decor for the button
+                    HStack{
+                        Label("START A NEW WORKOUT", systemImage: "play.circle")
+                            .foregroundStyle(Color.white.gradient)
+                            .fontWeight(.bold)
+                            .padding()
+                            .background(Color.accent)
+                            .cornerRadius(10) // rounded corners
+                    }
+                }
+
+                // templates to display
+                Text("Your Templates")
+                    .font(.title2)
+                    .fontWeight(.bold)
+            }
         }
     }
 }
-
 #Preview {
     HomeView()
 }
