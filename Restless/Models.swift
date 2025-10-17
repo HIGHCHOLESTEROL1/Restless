@@ -6,7 +6,13 @@
 //
 
 import SwiftUI
-// accent color for most buttons, icons, basic color of the system
+
+// default fonts
+extension Font {
+    static let Title = Font.system(.title, design: .serif)
+    static let Title2 = Font.system(.title2, design: .serif)
+    static let Default = Font.system(size: 17, design: .serif)
+}
 
 // default starter background
 let backgroundGradient = LinearGradient(
@@ -25,3 +31,11 @@ let lightHomeBackgroundGradient = LinearGradient(
     colors: [Color.white, Color.gray],
     startPoint: .top, endPoint: .bottom
     )
+
+// default spacing
+enum Spacing {
+    static let s: CGFloat = 10
+    static let m: CGFloat = 20
+    static let l: CGFloat = 50
+    static let xl: CGFloat = 100
+}

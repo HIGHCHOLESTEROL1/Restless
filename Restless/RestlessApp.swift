@@ -12,7 +12,6 @@ struct RestlessApp: App {
     var body: some Scene {
         WindowGroup {
             StarterView()
-                .environment(\.font, .system(.body, design: .monospaced)) // universal string font
         }
     }
 }

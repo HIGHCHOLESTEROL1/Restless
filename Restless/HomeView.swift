@@ -33,49 +33,57 @@ struct HomeView: View{
                 lightHomeBackgroundGradient
                     .ignoresSafeArea()
             }
-            VStack (alignment: .leading, spacing: 20) {
+            // Initial section containing welcome mssg
+            VStack (spacing: Spacing.m) {
                 Text("Welcome, Brian!")
-                    .font(.title)
+                    .font(.Title)
                     .fontWeight(.bold)
-                
-                // button to start a untemplated workout
-                Button(action: startWorkout) {
-                    // decor for the button
-                    HStack{
-                        Label("START A NEW WORKOUT", systemImage: "play.circle")
-                            .foregroundStyle(Color.white.gradient)
-                            .fontWeight(.bold)
-                            .padding()
-                            .background(Color.accent)
-                            .cornerRadius(10) // rounded corners
+                // second section containing start workout button and template buttons
+                VStack(spacing: Spacing.l) {
+                    // button to start a untemplated workout
+                    Button(action: startWorkout) {
+                        // decor for the button
+                        HStack{
+                            Label("START A NEW WORKOUT", systemImage: "play.circle")
+                                .foregroundStyle(Color.white.gradient)
+                                .fontWeight(.bold)
+                                .padding()
+                                .background(Color.accent)
+                                .cornerRadius(10) // rounded corners
+                        }
+                    }
+                    // templates section
+                    VStack(alignment: .leading, spacing: Spacing.m) {
+                        HStack(spacing: Spacing.xl) {
+                            Text("Templates")
+                                .font(.Title2)
+                                .fontWeight(.bold)
+                            // edit template section
+                            HStack() {
+                                // add templates button
+                                Button(action: createNewTemplate) {
+                                    Image(systemName: "plus")
+                                        .padding()
+                                        .fontWeight(.bold)
+                                        .foregroundStyle(Color.white)
+                                        .background(Color.gray)
+                                        .clipShape(Circle())
+                                }
+                                // edit templates button
+                                Button(action: editTemplate) {
+                                    Image(systemName: "pencil")
+                                        .padding()
+                                        .fontWeight(.bold)
+                                        .foregroundStyle(Color.white)
+                                        .background(Color.gray)
+                                        .clipShape(Circle())
+                                }
+                            }
+                        }
                     }
                 }
                 // templates
-                HStack(spacing: 50) {
-                    Text("Your Templates")
-                        .font(.title2)
-                        .fontWeight(.bold)
-                    // add templates button
-                    HStack() {
-                        Button(action: createNewTemplate) {
-                            Image(systemName: "plus")
-                                .padding()
-                                .fontWeight(.bold)
-                                .foregroundStyle(Color.white)
-                                .background(Color.gray)
-                                .clipShape(Circle())
-                        }
-                        // edit templates button
-                        Button(action: editTemplate) {
-                            Image(systemName: "pencil")
-                                .padding()
-                                .fontWeight(.bold)
-                                .foregroundStyle(Color.white)
-                                .background(Color.gray)
-                                .clipShape(Circle())
-                        }
-                    }
-                }
+                TemplateView()
             }
         }
     }
