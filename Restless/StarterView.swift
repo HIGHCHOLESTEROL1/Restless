@@ -16,7 +16,7 @@ struct StartView: View {
             VStack{
                 Image("AppLogo")
                 Text("Restless") // title
-                    .font(.title)
+                    .font(.Title)
                     .bold(true)
                     .foregroundStyle(Color.white.gradient)
             }
