@@ -34,7 +34,7 @@ let lightHomeBackgroundGradient = LinearGradient(
 
 // default spacing
 enum Spacing {
-    static let s: CGFloat = 10
+    static let s: CGFloat = 16
     static let m: CGFloat = 20
     static let l: CGFloat = 50
     static let xl: CGFloat = 100

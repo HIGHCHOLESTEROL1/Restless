@@ -25,7 +25,7 @@ func editTemplate(){
 // base home view
 struct HomeView: View{
     var body: some View {
-        ZStack{ // layered z-axis UI
+        ZStack { // layered z-axis UI
             homeBackgroundGradient
                 .ignoresSafeArea()
             VStack{
@@ -34,12 +34,12 @@ struct HomeView: View{
                     .ignoresSafeArea()
             }
             // Initial section containing welcome mssg
-            VStack (spacing: Spacing.m) {
-                Text("Welcome, Brian!")
-                    .font(.Title)
-                    .fontWeight(.bold)
-                // second section containing start workout button and template buttons
-                VStack(spacing: Spacing.l) {
+            ScrollView {
+                VStack (spacing: Spacing.m) {
+                    Text("Welcome, Brian!")
+                        .font(.Title)
+                        .fontWeight(.bold)
+                    // second section containing start workout button and template buttons
                     // button to start a untemplated workout
                     Button(action: startWorkout) {
                         // decor for the button

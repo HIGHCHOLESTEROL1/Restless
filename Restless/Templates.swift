@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-// default templated workouts
+// default templated workouts 3 per
 let columns = [
     GridItem(.flexible()),
     GridItem(.flexible()),
@@ -19,36 +19,54 @@ struct Template: View {
     let title: String
     
     var body: some View {
-        Text(title)
+        Text(title.uppercased())
             .font(.Default)
+            .fontWeight(.bold)
+        Image(systemName: "play.fill")
+            .background(Color.blue)
+            .foregroundStyle(Color.white.gradient)
+            .padding()
+            .clipShape(Circle())
     }
 }
 
 struct TemplateView: View {
     var body: some View {
-        // lazyVGrid, supports dynamic data, live updates from FireBase
-        Text("Beginner Workout")
-            .font(.Default)
-            .fontWeight(.bold)
-        // non custom templates (standard 3 that will always exist)
-        LazyVGrid(columns: columns) {
-            // temporary for now just for UI design
-            Template(title: "Push Day")
-            Template(title: "Pull Day")
-            Template(title: "Leg Day")
-        } .padding()
-        Text("Your Templates")
-            .font(.Default)
-            .fontWeight(.bold)
-        // non custom templates
-        LazyVGrid(columns: columns) {
-            // temporary for now just for UI design
-            Template(title: "Upper Day")
-            Template(title: "Lower Day")
-            Template(title: "Arms & Shoulders")
-            Template(title: "Upper Back Focused")
-            Template(title: "Cardio Day")
-        } .padding()
+        VStack(alignment: .leading, spacing: Spacing.m) {
+            VStack(alignment: .leading, spacing: Spacing.s) {
+                // lazyVGrid, supports dynamic data, live updates from FireBase
+                Text("Beginner Workout")
+                    .font(.Title2)
+                    .fontWeight(.bold)
+                // non custom templates (standard 3 that will always exist)
+                LazyVGrid(columns: columns) {
+                    // temporary for now just for UI design
+                    Template(title: "Push Day")
+                    Template(title: "Pull Day")
+                    Template(title: "Leg Day")
+                } .frame(maxWidth: .infinity)
+            } .padding()
+            
+            VStack(alignment: .leading, spacing: Spacing.s) {
+                Text("Your Templates")
+                    .font(.Title2)
+                    .fontWeight(.bold)
+                // non custom templates
+                ScrollView() {
+                    LazyVGrid(columns: columns) {
+                        // temporary for now just for UI design
+                        Template(title: "Upper Day")
+                        Template(title: "Lower Day")
+                        Template(title: "Cardio Day")
+                        Template(title: "U chest focused")
+                        Template(title: "U back focused")
+                        Template(title: "Arms & shoulders")
+                        Template(title: "Chest Bi")
+                        Template(title: "Back tri")
+                    } .frame(maxWidth: .infinity)
+                }
+            } .padding()
+        }
     }
 }
 
