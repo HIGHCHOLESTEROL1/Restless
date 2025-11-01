@@ -39,3 +39,29 @@ enum Spacing {
     static let l: CGFloat = 50
     static let xl: CGFloat = 100
 }
+
+// class for exercises
+struct Exercise {
+    let name: String
+    let type: String
+    let muscle_group: String
+    let equipment: String
+    let difficulty: String
+    let instructions: String
+}
+
+// class for a food
+struct Food {
+    let name: String
+    let calories: Float
+    let servingSize_g: Float
+    let num_fat_g: Float
+    let num_sat_fat_g: Float
+    let num_protein_g: Float
+    let num_sodium_mg: Float
+    let num_potassium_mg: Float
+    let num_cholestrol_mg: Float
+    let num_carbs_g: Float
+    let num_fiber_g: Float
+    let num_sugar_g: Float
+}
