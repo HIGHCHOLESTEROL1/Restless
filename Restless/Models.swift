@@ -42,12 +42,14 @@ enum Spacing {
 
 // class for exercises
 struct Exercise {
+    let exerciseID: String
     let name: String
-    let type: String
-    let muscle_group: String
-    let equipment: String
-    let difficulty: String
-    let instructions: String
+    let gifUrl: URL
+    let targetMuscles: Array<String>
+    let bodyParts: Array<String>
+    let equipments: Array<String>
+    let secondaryMuscles: Array<String>
+    let instructions: Array<String>
 }
 
 // class for a food

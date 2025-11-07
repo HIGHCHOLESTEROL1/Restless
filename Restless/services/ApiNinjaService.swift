@@ -54,4 +54,3 @@ func NinjaService_exercises(muscleGroup: String, completion: @escaping (String?)
 
     task.resume()
 }
-
