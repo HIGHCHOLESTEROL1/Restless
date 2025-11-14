@@ -10,7 +10,6 @@ import SwiftUI
 // action to start workout
 func startWorkout(){
     print("start workout pressed") // testing purposeså
-    exerciseService()
 }
 
 // action to create new workout template

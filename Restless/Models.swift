@@ -67,3 +67,8 @@ struct Food {
     let num_fiber_g: Float
     let num_sugar_g: Float
 }
+
+struct template {
+    let numExercise: Int
+    let exercises: Array<Exercise>
+}
