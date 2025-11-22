@@ -10,13 +10,6 @@ import SwiftUI
 // action to start workout
 func startWorkout(){
     print("start workout pressed") // testing purposeså
-    print(NinjaService_exercises(muscleGroup: "lats"){ response in
-        if let response = response {
-            print("API Response:\n\(response)")
-        } else {
-            print("No response")
-        }
-    })
 }
 
 // action to create new workout template
