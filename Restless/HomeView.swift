@@ -22,6 +22,22 @@ func editTemplate(){
     print("edit templates button pressed")
 }
 
+// change to homepage
+func navigateToHome(){
+    print("navigate to home page pressed")
+}
+
+// change to Exercise page
+func navigateToExercises(){
+    print("navigate to exercise page pressed")
+}
+
+// change to history
+func navigateToHistory(){
+    print("navigate to history page pressed")
+}
+
+
 // base home view
 struct HomeView: View {
     var body: some View {
@@ -82,6 +98,38 @@ struct HomeView: View {
             TemplateView()
         }
         .padding()
+        
+        // bottom navigation bar
+        ZStack {
+            HStack (spacing: Spacing.l){
+                // homepage, exercisepage, history page
+                Button(action: navigateToHome) {
+                    VStack {
+                        Image(systemName: "house")
+                            .fontWeight(.bold)
+                        Text("Home")
+                            .fontWeight(.bold)
+                    }
+                }
+                Button(action: navigateToExercises) {
+                    VStack {
+                        Image(systemName: "dumbbell")
+                            .fontWeight(.bold)
+                        Text("Exercises")
+                            .fontWeight(.bold)
+                    }
+                }
+                Button(action: navigateToHistory) {
+                    VStack {
+                        Image(systemName: "clock")
+                            .fontWeight(.bold)
+                        Text("History")
+                            .fontWeight(.bold)
+                    }
+                }
+            }
+        }
+        .frame(maxHeight: Spacing.s)
     }
 }
 
