@@ -22,69 +22,90 @@ func editTemplate(){
     print("edit templates button pressed")
 }
 
+// change to homepage
+func navigateToHome(){
+    print("navigate to home page pressed")
+}
+
+// change to Exercise page
+func navigateToExercises(){
+    print("navigate to exercise page pressed")
+}
+
+// change to history
+func navigateToHistory(){
+    print("navigate to history page pressed")
+}
+
+
 // base home view
 struct HomeView: View {
     var body: some View {
-        ZStack {
-            backgroundGradient.ignoresSafeArea()
-            Image("AppLogo")
-        }
-        .frame(maxHeight: Spacing.xl)
-        ScrollView {
-            VStack (spacing: Spacing.m) {
-                Text("Welcome, Brian!")
-                    .font(.Title)
-                    .fontWeight(.bold)
-                // second section containing start workout button and template buttons
-                // button to start a untemplated workout
-                Button(action: startWorkout) {
-                    // decor for the button
-                    HStack{
-                        Label("START A NEW WORKOUT", systemImage: "play.circle")
-                            .foregroundStyle(Color.white.gradient)
-                            .fontWeight(.bold)
-                            .padding()
-                            .background(Color.accent)
-                            .cornerRadius(10) // rounded corners
-                    }
-                }
+        VStack {
+            ZStack {
+                backgroundGradient.ignoresSafeArea()
+                Image("AppLogo")
             }
-            // template title and template adding/editing section
-            VStack (alignment: .leading, spacing: Spacing.m) {
-                HStack(spacing: Spacing.xl) {
-                    Text("Templates")
-                        .font(.Title2)
+            .frame(maxHeight: Spacing.xl)
+            ScrollView {
+                VStack (spacing: Spacing.m) {
+                    Text("Welcome, Brian!")
+                        .font(.Title)
                         .fontWeight(.bold)
-                    // edit template section
-                    HStack() {
-                        // add templates button
-                        Button(action: createNewTemplate) {
-                            Image(systemName: "plus")
-                                .padding()
+                    // second section containing start workout button and template buttons
+                    // button to start a untemplated workout
+                    Button(action: startWorkout) {
+                        // decor for the button
+                        HStack{
+                            Label("START A NEW WORKOUT", systemImage: "play.circle")
+                                .foregroundStyle(Color.white.gradient)
                                 .fontWeight(.bold)
-                                .foregroundStyle(Color.white)
-                                .background(Color.gray)
-                                .clipShape(Circle())
-                        }
-                        // edit templates button
-                        Button(action: editTemplate) {
-                            Image(systemName: "pencil")
                                 .padding()
-                                .fontWeight(.bold)
-                                .foregroundStyle(Color.white)
-                                .background(Color.gray)
-                                .clipShape(Circle())
+                                .background(Color.accent)
+                                .cornerRadius(10) // rounded corners
                         }
                     }
                 }
+                .padding(5)
+                // template title and template adding/editing section
+                VStack (alignment: .leading, spacing: Spacing.m) {
+                    HStack(spacing: Spacing.xl) {
+                        Text("Templates")
+                            .font(.Title2)
+                            .fontWeight(.bold)
+                        // edit template section
+                        HStack() {
+                            // add templates button
+                            Button(action: createNewTemplate) {
+                                Image(systemName: "plus")
+                                    .padding()
+                                    .fontWeight(.bold)
+                                    .foregroundStyle(Color.white)
+                                    .background(Color.gray)
+                                    .clipShape(Circle())
+                            }
+                            // edit templates button
+                            Button(action: editTemplate) {
+                                Image(systemName: "pencil")
+                                    .padding()
+                                    .fontWeight(.bold)
+                                    .foregroundStyle(Color.white)
+                                    .background(Color.gray)
+                                    .clipShape(Circle())
+                            }
+                        }
+                    }
+                }
+                // templates
+                TemplateView()
+                    .padding(5)
             }
-            // templates
-            TemplateView()
         }
-        .padding()
     }
 }
 
+// group view to allow transitions
+    
 #Preview {
     HomeView()
 }

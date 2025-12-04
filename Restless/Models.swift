@@ -11,7 +11,7 @@ import SwiftUI
 extension Font {
     static let Title = Font.system(.title, design: .serif)
     static let Title2 = Font.system(.title2, design: .serif)
-    static let Default = Font.system(size: 17, design: .serif)
+    static let Default = Font.system(size: 14, design: .serif)
 }
 
 // default starter background
@@ -28,7 +28,7 @@ let homeBackgroundGradient = LinearGradient(
 
 // default home background (light)
 let lightHomeBackgroundGradient = LinearGradient(
-    colors: [Color.white, Color.gray],
+    colors: [Color.gray, Color.white],
     startPoint: .top, endPoint: .bottom
     )
 

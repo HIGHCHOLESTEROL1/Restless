@@ -56,20 +56,16 @@ func service_allMuscles() {
             print(error as Any)
         } else {
             let httpResponse = response as? HTTPURLResponse
-            print(httpResponse)
         }
         if let data = data {
             do {
                 let json = try JSONSerialization.jsonObject(with: data, options: [])
-                print(json)
             } catch {
                 print("JSON parsing error:", error)
             }
         }
     })
-    
     dataTask.resume()
-
 }
 
 // fetches all exercises related to a chosen muscle groups
@@ -94,7 +90,6 @@ func service_getExercise_byMuscle(muscleGroup: String) {
         print(error as Any)
       } else {
         let httpResponse = response as? HTTPURLResponse
-        print(httpResponse)
       }
     if let data = data {
             do {
@@ -134,7 +129,6 @@ func service_getExercises_bySearch(searchTerm: String) {
             print(error as Any)
         } else {
             let httpResponse = response as? HTTPURLResponse
-            print(httpResponse)
         }
         if let data = data {
             do {
@@ -175,7 +169,6 @@ func service_advanced_getExercises(searchTerm: String, muscleGroup: Array<String
             print(error as Any)
         } else {
             let httpResponse = response as? HTTPURLResponse
-            print(httpResponse)
         }
         if let data = data {
             do {
