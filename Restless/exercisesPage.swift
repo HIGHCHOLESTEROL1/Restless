@@ -13,6 +13,7 @@ struct ExercisePage: View {
     }
 }
 
+
 #Preview {
     ExercisePage()
 }

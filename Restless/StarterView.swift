@@ -30,7 +30,7 @@ struct StarterView: View{
     var body: some View {
         Group{
             if starterFinished {
-                HomeView().transition(.move(edge: .trailing))
+                MainTabView().transition(.move(edge: .trailing))
             } else {
                 StartView().transition(.move(edge: .leading))
             }
