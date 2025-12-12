@@ -20,7 +20,11 @@ extension CharacterSet {
 struct exerciseView: View {
     var body: some View {
         Button("test all muscles") {
-            service_allMuscles()
+            Task {
+                let muscles = try await service_allMuscles()
+                print(muscles)
+            }
+
         }
         Button("test exercise by muscle group") {
             service_getExercise_byMuscle(muscleGroup: "upper back")
@@ -37,36 +41,14 @@ struct exerciseView: View {
 }
 
 // fetches all muscle groups
-func service_allMuscles() {
-    // creates the mutable url request
-    let components = URLComponents(string: "https://www.exercisedb.dev/api/v1/muscles")
-    guard let url = components?.url else {
-        print("Invalid url")
-        return
-    }
-    // set http method and create network sess
-    var request = URLRequest(url: url)
-    request.httpMethod = "GET"
-    let session = URLSession.shared
-    
-    // create task
-    let dataTask = session.dataTask(with: request as URLRequest, completionHandler: { (data, response, error) -> Void in
-        
-        if (error != nil) {
-            print(error as Any)
-        } else {
-            let httpResponse = response as? HTTPURLResponse
-        }
-        if let data = data {
-            do {
-                let json = try JSONSerialization.jsonObject(with: data, options: [])
-            } catch {
-                print("JSON parsing error:", error)
-            }
-        }
-    })
-    dataTask.resume()
+func service_allMuscles() async throws -> [String] {
+    let url = URL(string: "https://www.exercisedb.dev/api/v1/muscles")!
+    let (data, _) = try await URLSession.shared.data(from: url)
+    let decoded = try JSONDecoder().decode(MuscleGroups.self, from: data)
+    // name of all muscle groups
+    return decoded.data.map { $0.name }
 }
+
 
 // fetches all exercises related to a chosen muscle groups
 func service_getExercise_byMuscle(muscleGroup: String) {
@@ -88,8 +70,6 @@ func service_getExercise_byMuscle(muscleGroup: String) {
     let dataTask = session.dataTask(with: request as URLRequest, completionHandler: { (data, response, error) -> Void in
       if (error != nil) {
         print(error as Any)
-      } else {
-        let httpResponse = response as? HTTPURLResponse
       }
     if let data = data {
             do {
@@ -127,8 +107,6 @@ func service_getExercises_bySearch(searchTerm: String) {
         
         if (error != nil) {
             print(error as Any)
-        } else {
-            let httpResponse = response as? HTTPURLResponse
         }
         if let data = data {
             do {
@@ -167,8 +145,6 @@ func service_advanced_getExercises(searchTerm: String, muscleGroup: Array<String
         
         if (error != nil) {
             print(error as Any)
-        } else {
-            let httpResponse = response as? HTTPURLResponse
         }
         if let data = data {
             do {

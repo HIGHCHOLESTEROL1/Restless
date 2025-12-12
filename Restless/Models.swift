@@ -40,8 +40,16 @@ enum Spacing {
     static let xl: CGFloat = 100
 }
 
+// classes for muscle groups
+struct Muscle: Codable {
+    let name: String
+}
+struct MuscleGroups: Codable {
+    let data: [Muscle]
+}
+
 // class for exercises
-struct Exercise {
+struct Exercise: Codable {
     let exerciseID: String
     let name: String
     let gifUrl: URL
@@ -50,6 +58,9 @@ struct Exercise {
     let equipments: Array<String>
     let secondaryMuscles: Array<String>
     let instructions: Array<String>
+}
+struct Exercises: Codable {
+    let data: [Exercise]
 }
 
 // class for a food
