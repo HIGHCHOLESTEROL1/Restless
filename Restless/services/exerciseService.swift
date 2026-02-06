@@ -19,15 +19,31 @@ extension CharacterSet {
 
 struct exerciseView: View {
     var body: some View {
+        // testing functions to ensurre working API
         Button("test all muscles") {
             Task {
-                let muscles = try await service_allMuscles()
-                print(muscles)
+                do {
+                    let muscles = try await service_allMuscles()
+                    print(muscles)
+                } catch {
+                    print("Error fetching exercises: \(error)")
+                }
             }
-
         }
         Button("test exercise by muscle group") {
-            service_getExercise_byMuscle(muscleGroup: "upper back")
+            Task {
+                do {
+                    let fetched_exercises = try await service_getExercises_muscle(muscleGroup: "chest")
+                    for exercise in fetched_exercises {
+                        print(exercise)
+                    }
+                } catch {
+                    print("Error fetching exercises: \(error)")
+                }
+            }
+        }
+        Button("test exercises by muscle Group, json formatting"){
+            service_getExercises_byMuscle(muscleGroup: "shin")
         }
         Button("test search by exercise") {
             service_getExercises_bySearch(searchTerm: "chest press")
@@ -49,15 +65,35 @@ func service_allMuscles() async throws -> [String] {
     return decoded.data.map { $0.name }
 }
 
+func service_getExercises_muscle(muscleGroup: String) async throws -> [Exercise] {
+    let baseURL = "https://www.exercisedb.dev/api/v1/muscles/"
+    guard let encodedGroup = muscleGroup.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed),
+        let url = URL(string: baseURL + encodedGroup + "/exercises") else {
+        print("Invalid URL")
+        return [] // return empty exercise list if API failss
+    }
+    let (data, _) = try await URLSession.shared.data(from: url)
+    let decoder = JSONDecoder()
+    do {
+        let exercises = try decoder.decode([Exercise].self, from: data)
+        // array of Exercises
+        print("Found \(exercises.count) exercises")
+        return exercises
+    } catch {
+        print("Decoding error: \(error)")
+    }
+    // if api returns nothing (possible) due to api having some inconsistencies
+    return []
+}
 
 // fetches all exercises related to a chosen muscle groups
-func service_getExercise_byMuscle(muscleGroup: String) {
+func service_getExercises_byMuscle(muscleGroup: String) { //async throws -> [Exercise] {
     // handle spacing for more complex muscle groups
     let baseURL = "https://www.exercisedb.dev/api/v1/muscles/"
     guard let encodedGroup = muscleGroup.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed),
         let url = URL(string: baseURL + encodedGroup + "/exercises") else {
         print("Invalid URL")
-        return
+        return // return empty exercise list if API fails
     }
     let request = NSMutableURLRequest(
         url: url,

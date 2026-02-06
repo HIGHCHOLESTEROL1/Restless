@@ -76,7 +76,9 @@ struct ExerciseBlock: View {
 
 struct ExercisePage: View {
     @StateObject private var viewModel = MuscleGroupViewModel()
+    @State private var fetched_exercises: [Exercise] = []
     @State private var selectedMuscle: String? // keep track of selected muscle group
+    
     var body: some View {
         VStack {
             ZStack {
@@ -84,7 +86,7 @@ struct ExercisePage: View {
                 Image("AppLogo")
             }
             .frame(maxHeight: Spacing.l)
-    
+            
             NavigationStack {
                 VStack {
                     Text("Select a muscle group").font(.Default)
@@ -101,15 +103,15 @@ struct ExercisePage: View {
                     }
                     Spacer()
                 }
-                .navigationTitle("Exercises")
                 .task {
                     await viewModel.loadMuscles() // async task
                 }
             }
             .frame(maxHeight: Spacing.xl * 2)
             .searchable(text: $viewModel.searchText)
+            
             ScrollView{
-                Text("Upper Back")
+                Text($selectedMuscle.wrappedValue ?? "No Muscle Group Selected")
                     .font(.Default)
                     .fontWeight(.bold)
                 LazyVGrid(columns: Excolumns) {

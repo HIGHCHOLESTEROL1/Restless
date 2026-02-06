@@ -43,11 +43,6 @@ struct HomeView: View {
     var body: some View {
         VStack {
             ZStack {
-                backgroundGradient.ignoresSafeArea()
-                Image("AppLogo")
-            }
-            .frame(maxHeight: Spacing.xl)
-            ScrollView {
                 VStack (spacing: Spacing.m) {
                     Text("Welcome, Brian!")
                         .font(.Title)
@@ -61,12 +56,13 @@ struct HomeView: View {
                                 .foregroundStyle(Color.white.gradient)
                                 .fontWeight(.bold)
                                 .padding()
-                                .background(Color.accent)
+                                .background(Color.blue)
                                 .cornerRadius(10) // rounded corners
                         }
                     }
                 }
-                .padding(5)
+            }
+            ZStack {
                 // template title and template adding/editing section
                 VStack (alignment: .leading, spacing: Spacing.m) {
                     HStack(spacing: Spacing.xl) {
@@ -96,6 +92,8 @@ struct HomeView: View {
                         }
                     }
                 }
+            }
+            ScrollView {
                 // templates
                 TemplateView()
                     .padding(5)
