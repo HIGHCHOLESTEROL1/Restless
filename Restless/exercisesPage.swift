@@ -31,12 +31,13 @@ struct GIFWebView: UIViewRepresentable {
 //allows ExerciseView to call and access
 @MainActor
 class MuscleGroupViewModel: ObservableObject {
-    @Published var muscleGroups: [String] = []
+    @Published var muscleGroups: [Muscle] = []
     @Published var searchText: String = "" // for search bar
     func loadMuscles() async {
         do {
             muscleGroups = try await service_allMuscles()
-            muscleGroups.append("None")
+            let placeholder = Muscle(name: "None") // placeholder for when no muscle is selected
+            muscleGroups.append(placeholder)
         } catch {
             print("Failed to load muscles: \(error.localizedDescription)")
         }
@@ -92,9 +93,10 @@ struct ExercisePage: View {
                     Text("Select a muscle group").font(.Default)
                     // dropdown menu for selecting muscle groups
                     if !viewModel.muscleGroups.isEmpty {
+                        // iterate through each muscle groups
                         Picker(selection: $selectedMuscle, label: Text(selectedMuscle ?? "Select Muscle Group")) {
-                            ForEach(viewModel.muscleGroups, id: \.self) { group in
-                                Text(group).tag(group as String?)
+                            ForEach(viewModel.muscleGroups, id: \.name) { muscle in
+                                Text(muscle.name).tag(muscle.name as String?)
                             }
                         }
                         .pickerStyle(.menu) // default menu style
