@@ -70,9 +70,9 @@ struct exerciseView: View {
         Button("test exercise by muscle group") {
             Task {
                 do {
-                    let fetched_exercises = try await service_getExercises_muscle(muscleGroup: "chest")
+                    let fetched_exercises = try await service_getExercises_muscle(muscleGroup: "abs")
                     for exercise in fetched_exercises {
-                        print(exercise)
+                        print(exercise.name)
                     }
                 } catch {
                     print("Error fetching exercises: \(error)")

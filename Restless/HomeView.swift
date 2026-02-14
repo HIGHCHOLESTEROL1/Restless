@@ -42,6 +42,12 @@ func navigateToHistory(){
 struct HomeView: View {
     var body: some View {
         VStack {
+            // Header
+            ZStack {
+                backgroundGradient.ignoresSafeArea()
+                Image("AppLogo")
+            }
+            .frame(maxHeight: Spacing.xl)
             ZStack {
                 VStack (spacing: Spacing.m) {
                     Text("Welcome, Brian!")

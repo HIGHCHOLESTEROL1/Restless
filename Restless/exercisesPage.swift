@@ -13,7 +13,7 @@ let Excolumns = [
     GridItem(.flexible())
 ]
 
-// struct for gifs, part of swiftUI
+// struct for gifs, only loaded when user clicks into a exerciseBlock
 struct GIFWebView: UIViewRepresentable {
     let url: URL
 
@@ -28,11 +28,16 @@ struct GIFWebView: UIViewRepresentable {
     }
 }
 
+// static view of the gif, prevent lag
+
 //allows ExerciseView to call and access
 @MainActor
 class MuscleGroupViewModel: ObservableObject {
     @Published var muscleGroups: [Muscle] = []
+    @Published var exercises: [Exercise] = []
     @Published var searchText: String = "" // for search bar
+    
+    @MainActor
     func loadMuscles() async {
         do {
             muscleGroups = try await service_allMuscles()
@@ -40,6 +45,17 @@ class MuscleGroupViewModel: ObservableObject {
             muscleGroups.append(placeholder)
         } catch {
             print("Failed to load muscles: \(error.localizedDescription)")
+        }
+    }
+    @MainActor // This ensures everything inside updates the UI safely
+    func loadExercises(muscle: String) async {
+        self.exercises = []
+        do {
+            let fetchedExercises = try await service_getExercises_muscle(muscleGroup: muscle)
+            self.exercises = fetchedExercises
+            
+        } catch {
+            print("Failed to load Exercises: \(error.localizedDescription)")
         }
     }
 }
@@ -62,8 +78,12 @@ struct ExerciseBlock: View {
                 }
             }
             Spacer()
+            // static image
+            AsyncImage(url: image) {image in
+                image.image?.resizable().scaledToFit()
+            }.frame(width: 100, height:100)
             // gif for the exercise
-            GIFWebView(url: image).frame(width: 100, height: 100)
+            // GIFWebView(url: image).frame(width: 100, height: 100)
         }
         .padding()
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -77,11 +97,11 @@ struct ExerciseBlock: View {
 
 struct ExercisePage: View {
     @StateObject private var viewModel = MuscleGroupViewModel()
-    @State private var fetched_exercises: [Exercise] = []
-    @State private var selectedMuscle: String? // keep track of selected muscle group
-    
+    @State private var selectedMuscle: String?
+
     var body: some View {
         VStack {
+            // Header
             ZStack {
                 backgroundGradient.ignoresSafeArea()
                 Image("AppLogo")
@@ -91,53 +111,55 @@ struct ExercisePage: View {
             NavigationStack {
                 VStack {
                     Text("Select a muscle group").font(.Default)
-                    // dropdown menu for selecting muscle groups
+                    // selector for muscles
                     if !viewModel.muscleGroups.isEmpty {
-                        // iterate through each muscle groups
                         Picker(selection: $selectedMuscle, label: Text(selectedMuscle ?? "Select Muscle Group")) {
+                            // Tag must match the selection type (String?)
                             ForEach(viewModel.muscleGroups, id: \.name) { muscle in
                                 Text(muscle.name).tag(muscle.name as String?)
                             }
                         }
-                        .pickerStyle(.menu) // default menu style
+                        .pickerStyle(.menu)
                     } else {
-                        ProgressView("Loading...")
+                        ProgressView("Loading Muscles...")
                     }
                     Spacer()
                 }
                 .task {
-                    await viewModel.loadMuscles() // async task
+                    await viewModel.loadMuscles() // load in all muscles
                 }
             }
             .frame(maxHeight: Spacing.xl * 2)
             .searchable(text: $viewModel.searchText)
             
-            ScrollView{
-                Text($selectedMuscle.wrappedValue ?? "No Muscle Group Selected")
+            ScrollView {
+                // Title of the current section
+                Text(selectedMuscle ?? "No Muscle Group Selected")
                     .font(.Default)
                     .fontWeight(.bold)
+                
                 LazyVGrid(columns: Excolumns) {
-                    // temporary for now just for UI design
-                    let gifUrl = [
-                        URL(string: "https://static.exercisedb.dev/media/c8oybX6.gif")!,
-                        URL(string: "https://static.exercisedb.dev/media/UFGF6gk.gif")!,
-                        URL(string: "https://static.exercisedb.dev/media/w2oRpuH.gif")!,
-                        URL(string: "https://static.exercisedb.dev/media/ZqNOWQ6.gif")!,
-                        URL(string: "https://static.exercisedb.dev/media/dmgMp3n.gif")!]
-                        
-                    // Temporary just to ensure it visually looks how I want it to
-                    ExerciseBlock(name: "cable rope crossover seated row", image: gifUrl[0], targetMuscles: ["upper back"])
-                    
-                    ExerciseBlock(name: "dumbbell one arm bent-over row", image: gifUrl[1], targetMuscles: ["upper back"])
-                    
-                    ExerciseBlock(name: "lever reverse grip vertical row", image: gifUrl[2], targetMuscles: ["upper back"])
-                    
-                    ExerciseBlock(name: "barbell incline row", image: gifUrl[3], targetMuscles: ["upper back"])
-                    
-                    ExerciseBlock(name: "smith narrow row", image: gifUrl[4], targetMuscles: ["upper back"])
-                    
-                } .frame(maxWidth: .infinity)
-            } .padding()
+                    // Use the exercises from your ViewModel
+                    ForEach(viewModel.exercises, id: \.exerciseId) { exercise in
+                        ExerciseBlock(
+                            name: exercise.name,
+                            image: exercise.gifUrl,
+                            targetMuscles: exercise.targetMuscles
+                        )
+                    }
+                }
+                .frame(maxWidth: .infinity)
+            }
+            .padding()
+            // Trigger API call when selection changes
+            .onChange(of: selectedMuscle) { oldValue, newValue in
+                // newValue is the muscle the user just tapped
+                if let muscle = newValue {
+                    Task {
+                        await viewModel.loadExercises(muscle: muscle)
+                    }
+                }
+            }
         }
     }
 }
