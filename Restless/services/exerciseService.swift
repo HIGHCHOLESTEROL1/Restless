@@ -122,7 +122,6 @@ func service_getExercises_muscle(muscleGroup: String) async throws -> [Exercise]
     do {
         // some responses can return multiple pages of data
         // Will iterate through each page until page is NULL fetching evry exercise
-        var i = 0
         while true{
             let (data, response) = try await URLSession.shared.data(from: url)
             guard let httpResponse = response as? HTTPURLResponse else {

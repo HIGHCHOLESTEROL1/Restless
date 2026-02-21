@@ -41,8 +41,6 @@ class MuscleGroupViewModel: ObservableObject {
     func loadMuscles() async {
         do {
             muscleGroups = try await service_allMuscles()
-            let placeholder = Muscle(name: "None") // placeholder for when no muscle is selected
-            muscleGroups.append(placeholder)
         } catch {
             print("Failed to load muscles: \(error.localizedDescription)")
         }
@@ -66,6 +64,8 @@ struct ExerciseBlock: View {
     let image: URL
     let targetMuscles: Array<String>
     let secondaryMuscles: Array<String>
+    let instructions: Array<String>
+    @State private var showingAlert = false // keep track of popups
     
     var body: some View {
         HStack {
@@ -95,8 +95,6 @@ struct ExerciseBlock: View {
             AsyncImage(url: image) {image in
                 image.image?.resizable().scaledToFit()
             }.frame(width: 100, height:100)
-            // gif for the exercise
-            // GIFWebView(url: image).frame(width: 100, height: 100)
         }
         .padding()
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -105,9 +103,37 @@ struct ExerciseBlock: View {
             RoundedRectangle(cornerRadius: 16)
                 .fill(Color.white.opacity(1))
                 .shadow(color: .black.opacity(0.2), radius: 5, x: 0, y: 2))
+        
+        // functionality when user clicks on a exercise
+        .onTapGesture {
+            showingAlert = true
+        }
+        // popup showing the exercise, along with instructions
+        .sheet(isPresented: $showingAlert) {
+            VStack(alignment: .leading) {
+                Text(name)
+                    .font(.title)
+                    .padding()
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 10) { // iterate each instruction
+                        ForEach(instructions, id: \.self) { instruction in
+                            Text(instruction)
+                        }
+                        // gif for the exercise
+                        GIFWebView(url: image)
+                            .frame(maxWidth: .infinity)
+                            .aspectRatio(1, contentMode: .fit)
+                    }
+                    .padding()
+                }
+                Button("Close") {
+                    showingAlert = false
+                }
+                .padding()
+            }
+        }
     }
 }
-
 struct ExercisePage: View {
     @StateObject private var viewModel = MuscleGroupViewModel()
     @State private var selectedMuscle: String?
@@ -158,7 +184,8 @@ struct ExercisePage: View {
                             name: exercise.name,
                             image: exercise.gifUrl,
                             targetMuscles: exercise.targetMuscles,
-                            secondaryMuscles: exercise.secondaryMuscles
+                            secondaryMuscles: exercise.secondaryMuscles,
+                            instructions: exercise.instructions
                         )
                     }
                 }
