@@ -65,15 +65,28 @@ struct ExerciseBlock: View {
     let name: String
     let image: URL
     let targetMuscles: Array<String>
+    let secondaryMuscles: Array<String>
     
     var body: some View {
         HStack {
             // templated name
             VStack(alignment: .leading) {
                 Text(name)
+                    .font(.Title2)
+                    .textCase(.uppercase)
+                    .foregroundStyle(Color.blue.gradient)
+                    .fontWeight(.bold)
+                // display primary and secondary muscles that are being used
+                Text("Primary Muscles:")
                     .font(.Default)
                     .fontWeight(.bold)
                 ForEach(targetMuscles, id: \.self) { group in
+                    Text(group).tag(group as String?).font(.Default)
+                }
+                Text("Secondary Muscles:")
+                    .font(.Default)
+                    .fontWeight(.bold)
+                ForEach(secondaryMuscles, id: \.self) { group in
                     Text(group).tag(group as String?).font(.Default)
                 }
             }
@@ -133,7 +146,7 @@ struct ExercisePage: View {
             .searchable(text: $viewModel.searchText)
             
             ScrollView {
-                // Title of the current section
+                // Title of the current sections
                 Text(selectedMuscle ?? "No Muscle Group Selected")
                     .font(.Default)
                     .fontWeight(.bold)
@@ -144,7 +157,8 @@ struct ExercisePage: View {
                         ExerciseBlock(
                             name: exercise.name,
                             image: exercise.gifUrl,
-                            targetMuscles: exercise.targetMuscles
+                            targetMuscles: exercise.targetMuscles,
+                            secondaryMuscles: exercise.secondaryMuscles
                         )
                     }
                 }

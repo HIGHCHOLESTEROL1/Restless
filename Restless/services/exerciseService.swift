@@ -17,7 +17,7 @@ extension CharacterSet {
 }
 
 // api meta data
-struct Metadata: Codable {
+struct Metadata: Decodable {
     let totalPages: Int
     let totalExercises: Int
     let currentPage: Int
@@ -35,13 +35,13 @@ struct Muscle: Codable {
 }
 
 // class for exercises
-struct ExerciseResponse: Codable {
+struct ExerciseResponse: Decodable {
     let success: Bool
     let metadata: Metadata
     let data: [Exercise]
 }
 
-struct Exercise: Codable {
+struct Exercise: Decodable {
     let exerciseId: String
     let name: String
     let gifUrl: URL
@@ -113,22 +113,51 @@ func service_allMuscles() async throws -> [Muscle] {
 func service_getExercises_muscle(muscleGroup: String) async throws -> [Exercise] {
     let baseURL = "https://www.exercisedb.dev/api/v1/muscles/"
     guard let encodedGroup = muscleGroup.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed),
-    let url = URL(string: baseURL + encodedGroup + "/exercises")
+          var url = URL(string: baseURL + encodedGroup + "/exercises" + "?limit=25")
     else {
-        print("Invalid URL")
-        return [] // return empty exercise list if API failss
-    }
-    let (data, _) = try await URLSession.shared.data(from: url)
-    do {
-        let exercisesData = try JSONDecoder().decode(ExerciseResponse.self, from: data)
-        if exercisesData.success { // API success
-            print("Found \(exercisesData.metadata.totalExercises) exercises")
-            return exercisesData.data
-        }
-        print("API failure: fetch exercise[muscle]")
         return []
+    }
+    // initial response
+    var allExercises : [Exercise] = []
+    do {
+        // some responses can return multiple pages of data
+        // Will iterate through each page until page is NULL fetching evry exercise
+        var i = 0
+        while true{
+            let (data, response) = try await URLSession.shared.data(from: url)
+            guard let httpResponse = response as? HTTPURLResponse else {
+                break
+            }
+            if httpResponse.statusCode == 429 { // API limited calls
+                print("Rate limited. Ending")
+                break // prevent pagination when API calls are limited
+            }
+            guard httpResponse.statusCode == 200 else { // only run on 200 success code
+                print("Bad status:", httpResponse.statusCode)
+                break
+            }
+            let exercisesData = try JSONDecoder().decode(ExerciseResponse.self, from: data)
+            if exercisesData.success {
+                allExercises.append(contentsOf: exercisesData.data)
+                // get to next page
+                if let nextPath = exercisesData.metadata.nextPage {
+                    let httpsPath = nextPath.replacingOccurrences(of: "http://", with: "https://") // force https cause for some reason API changes it
+                    guard let nextURL = URL(string: httpsPath + "?limit=25") else { break }
+                    url = nextURL
+                    // Small delay to avoid rate limiting
+                    try await Task.sleep(nanoseconds: 100_000_000)
+                } else {
+                    break
+                }
+            }
+            else{
+                print("API failure: fetch exercise[muscle]")
+                return []
+            }
+        }
+        return allExercises
     } catch {
-        print("Decoding error: fetch exercise[muscle]")
+        print("Decoding error:", error)
         return []
     }
 }
