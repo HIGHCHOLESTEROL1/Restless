@@ -174,15 +174,24 @@ func service_advanced_getExercises(searchTerm: String, muscleGroup: String, body
     guard var components = URLComponents(string: baseURL) else {
         throw URLError(.badURL)
     }
-    components.queryItems = [
+    var queryItems: [URLQueryItem] = []
+    if !equipment.isEmpty { // add all exercises into query
+        queryItems.append(contentsOf:
+            equipment.map { item in
+                URLQueryItem(name: "equipment[]", value: item)
+            }
+        )
+    }
+    let temp = [
         URLQueryItem(name: "limit", value: "25"),
         URLQueryItem(name: "search", value: searchTerm.isEmpty ? nil : searchTerm),
         URLQueryItem(name: "muscles", value: muscleGroup.isEmpty ? nil : muscleGroup),
-        URLQueryItem(name: "equipment", value: equipment.isEmpty ? nil : equipment.joined(separator: ",")),
         URLQueryItem(name: "bodyParts", value: bodyGroup.isEmpty ? nil : bodyGroup),
         URLQueryItem(name: "sortBy", value: "name"),
         URLQueryItem(name: "sortOrder", value: "asc")
     ]
+    queryItems.append(contentsOf: temp)
+    components.queryItems = queryItems
 
     guard var url = components.url else {
         throw URLError(.badURL)

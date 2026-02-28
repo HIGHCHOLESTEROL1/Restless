@@ -13,6 +13,9 @@ let Excolumns = [
     GridItem(.flexible())
 ]
 
+let default_equipment: Array<String> = ["cable", "assisted", "barbell", "dumbbell", "ez barbell", "olympic barbell",
+                         "weighted", "smith machine", "body weight", "leverage machine"]
+
 // struct for gifs, only loaded when user clicks into a exerciseBlock
 struct GIFWebView: UIViewRepresentable {
     let url: URL
@@ -31,8 +34,6 @@ struct GIFWebView: UIViewRepresentable {
 // curate the exercise data return data to avoid pulling hundreds of useless exercises that no one does
 func exerciseFiltered_call(selected_term: String) async throws-> [Exercise]{
     // default equipment to avoid fetching exercises that are non-curated among gym community
-    let default_equipment: Array<String> = ["cable", "assisted", "barbell", "dumbbell", "ez barbell", "olympic barbell",
-                             "weighted", "smith machine", "body weight", "leverage machine"]
     switch selected_term {
     case "shoulders", "cardio", "chest", "back" : // body-part
         return try await service_advanced_getExercises(searchTerm: "", muscleGroup: "", bodyGroup: selected_term, equipment: default_equipment)
@@ -150,7 +151,7 @@ struct ExerciseBlock: View {
 struct ExercisePage: View {
     @StateObject private var viewModel = MuscleGroupViewModel()
     @State private var selectedMuscle: String?
-    @State private var selectedBodyGroup: String?
+    @State private var selectedEquipment: String?
 
     var body: some View {
         VStack {
@@ -180,8 +181,19 @@ struct ExercisePage: View {
                             }
                         }
                         VStack {
-                            Text("Select a Category").font(.Default)
+                            Text("Select equipment").font(.Default)
                             // selector for body group
+                            if !viewModel.muscleGroups.isEmpty {
+                                Picker(selection: $selectedEquipment, label: Text(selectedEquipment ?? "Select equipment")) {
+                                    // Tag must match the selection type (String?)
+                                    ForEach(default_equipment, id:\.self) { equipment in
+                                        Text(equipment).tag(equipment as String?)
+                                    }
+                                }
+                                .pickerStyle(.menu)
+                            } else {
+                                ProgressView("Loading equipment...")
+                            }
                         }
                         
                     }
