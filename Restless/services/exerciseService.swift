@@ -79,13 +79,17 @@ struct exerciseView: View {
                 }
             }
         }
-        Button("test search by exercise") {
-            service_getExercises_bySearch(searchTerm: "chest press")
-        }
-        let muscleList = ["chest", "triceps"]
-        let equipmentList = ["dumbbell", "barbell"]
-        Button("test advanced filtering exercises") {
-            service_advanced_getExercises(searchTerm: "chest workout", muscleGroup: muscleList, equipment: equipmentList)
+        Button("test exercise by advanced filtering") {
+            Task {
+                do {
+                    let fetched_exercises = try await service_advanced_getExercises(searchTerm: "press", muscleGroup: "delts", bodyGroup: "shoulders", equipment: ["dumbbell"])
+                    for exercise in fetched_exercises {
+                        print(exercise.name)
+                    }
+                } catch {
+                    print("Error fetching exercises: \(error)")
+                }
+            }
         }
     }
 }
@@ -110,6 +114,7 @@ func service_allMuscles() async throws -> [Muscle] {
     }
 }
 
+// fetch all exercises by muscleGroup
 func service_getExercises_muscle(muscleGroup: String) async throws -> [Exercise] {
     let baseURL = "https://www.exercisedb.dev/api/v1/muscles/"
     guard let encodedGroup = muscleGroup.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed),
@@ -162,78 +167,69 @@ func service_getExercises_muscle(muscleGroup: String) async throws -> [Exercise]
 }
 
 
-// advanced filtering for searching for exercises
-func service_getExercises_bySearch(searchTerm: String) {
-    // creates the mutable url request
-    var components = URLComponents(string: "https://www.exercisedb.dev/api/v1/exercises")
-    // set query parameters
-    components?.queryItems = [
-        URLQueryItem(name: "search", value: searchTerm),
-        URLQueryItem(name: "sortBy", value: "targetMuscles")
-    ]
-    guard let url = components?.url else {
-        print("Invalid url")
-        return
-    }
-    // set http method and create network sess
-    var request = URLRequest(url: url)
-    request.httpMethod = "GET"
-    let session = URLSession.shared
-    
-    // create task
-    let dataTask = session.dataTask(with: request as URLRequest, completionHandler: { (data, response, error) -> Void in
-        
-        if (error != nil) {
-            print(error as Any)
-        }
-        if let data = data {
-            do {
-                let json = try JSONSerialization.jsonObject(with: data, options: [])
-                print(json)
-            } catch {
-                print("JSON parsing error:", error)
-            }
-        }
-    })
-    dataTask.resume()
-}
-
 // advanced filtering search
-func service_advanced_getExercises(searchTerm: String, muscleGroup: Array<String>, equipment: Array<String>) {
-    // creates the mutable url request
-    var components = URLComponents(string: "https://www.exercisedb.dev/api/v1/exercises/filter")
-    // set query parameters
-    components?.queryItems = [
-        URLQueryItem(name: "search", value: searchTerm),
-        URLQueryItem(name: "muscles", value: muscleGroup.joined(separator: ",")),
-        URLQueryItem(name: "equipment", value: equipment.joined(separator: ",")),
-        URLQueryItem(name: "sortBy", value: "targetMuscles")
-    ]
-    guard let url = components?.url else {
-        print("Invalid url")
-        return
+func service_advanced_getExercises(searchTerm: String, muscleGroup: String, bodyGroup: String,
+                                   equipment: Array<String>) async throws -> [Exercise] {
+    let baseURL = "https://www.exercisedb.dev/api/v1/exercises/filter"
+    guard var components = URLComponents(string: baseURL) else {
+        throw URLError(.badURL)
     }
-    // set http method and create network sess
-    var request = URLRequest(url: url)
-    request.httpMethod = "GET"
-    let session = URLSession.shared
-    
-    // create task
-    let dataTask = session.dataTask(with: request as URLRequest, completionHandler: { (data, response, error) -> Void in
-        
-        if (error != nil) {
-            print(error as Any)
-        }
-        if let data = data {
-            do {
-                let json = try JSONSerialization.jsonObject(with: data, options: [])
-                print(json)
-            } catch {
-                print("JSON parsing error:", error)
+    components.queryItems = [
+        URLQueryItem(name: "limit", value: "25"),
+        URLQueryItem(name: "search", value: searchTerm.isEmpty ? nil : searchTerm),
+        URLQueryItem(name: "muscles", value: muscleGroup.isEmpty ? nil : muscleGroup),
+        URLQueryItem(name: "equipment", value: equipment.isEmpty ? nil : equipment.joined(separator: ",")),
+        URLQueryItem(name: "bodyParts", value: bodyGroup.isEmpty ? nil : bodyGroup),
+        URLQueryItem(name: "sortBy", value: "name"),
+        URLQueryItem(name: "sortOrder", value: "asc")
+    ]
+
+    guard var url = components.url else {
+        throw URLError(.badURL)
+    }
+    print(url)
+    // initial response
+    var allExercises : [Exercise] = []
+    do {
+        // some responses can return multiple pages of data
+        // Will iterate through each page until page is NULL fetching evry exercise
+        while true{
+            let (data, response) = try await URLSession.shared.data(from: url)
+            guard let httpResponse = response as? HTTPURLResponse else {
+                break
+            }
+            if httpResponse.statusCode == 429 { // API limited calls
+                print("Rate limited. Ending")
+                break // prevent pagination when API calls are limited
+            }
+            guard httpResponse.statusCode == 200 else { // only run on 200 success code
+                print("Bad status:", httpResponse.statusCode)
+                break
+            }
+            let exercisesData = try JSONDecoder().decode(ExerciseResponse.self, from: data)
+            if exercisesData.success {
+                allExercises.append(contentsOf: exercisesData.data)
+                // get to next page
+                if let nextPath = exercisesData.metadata.nextPage {
+                    let httpsPath = nextPath.replacingOccurrences(of: "http://", with: "https://") // force https cause for some reason API changes it
+                    guard let nextURL = URL(string: httpsPath) else { break }
+                    url = nextURL
+                    // Small delay to avoid rate limiting
+                    try await Task.sleep(nanoseconds: 100_000_000)
+                } else {
+                    break
+                }
+            }
+            else{
+                print("API failure: fetch exercise[muscle]")
+                return []
             }
         }
-    })
-    dataTask.resume()
+        return allExercises
+    } catch {
+        print("Decoding error:", error)
+        return []
+    }
 }
 
 #Preview {
