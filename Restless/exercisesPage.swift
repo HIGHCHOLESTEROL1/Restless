@@ -15,7 +15,7 @@ let Excolumns = [
 
 let default_equipment: Array<String> = ["cable", "assisted", "barbell", "dumbbell", "ez barbell", "olympic barbell",
                          "weighted", "smith machine", "body weight", "leverage machine"]
-
+let default_bodyParts: Array<String> = ["shoulders", "cardio", "chest", "back", "abs", "forearms", "biceps", "triceps", "hamstrings", "quads", "calves", "glutes"]
 // struct for gifs, only loaded when user clicks into a exerciseBlock
 struct GIFWebView: UIViewRepresentable {
     let url: URL
@@ -32,13 +32,13 @@ struct GIFWebView: UIViewRepresentable {
 }
 
 // curate the exercise data return data to avoid pulling hundreds of useless exercises that no one does
-func exerciseFiltered_call(selected_term: String) async throws-> [Exercise]{
+func exerciseFiltered_call(selected_term: String, selected_equipment: String) async throws-> [Exercise]{
     // default equipment to avoid fetching exercises that are non-curated among gym community
     switch selected_term {
     case "shoulders", "cardio", "chest", "back" : // body-part
-        return try await service_advanced_getExercises(searchTerm: "", muscleGroup: "", bodyGroup: selected_term, equipment: default_equipment)
-    case "abs", "forearms", "biceps", "triceps", "hamstrings", "quads", "calves", "glues": // muscle-group
-        return try await service_advanced_getExercises(searchTerm: "", muscleGroup: selected_term, bodyGroup: "", equipment: default_equipment)
+        return try await service_advanced_getExercises(searchTerm: "", muscleGroup: "", bodyGroup: selected_term, equipment: selected_equipment.isEmpty ? default_equipment : [selected_equipment])
+    case "abs", "forearms", "biceps", "triceps", "hamstrings", "quads", "calves", "glutes": // muscle-group
+        return try await service_advanced_getExercises(searchTerm: "", muscleGroup: selected_term, bodyGroup: "", equipment: selected_equipment.isEmpty ? default_equipment : [selected_equipment])
     default:
         return []
     }
@@ -60,10 +60,10 @@ class MuscleGroupViewModel: ObservableObject {
         }
     }
     @MainActor // This ensures everything inside updates the UI safely
-    func loadExercises(muscle: String) async {
+    func loadExercises(muscle: String, equipment: String) async {
         self.exercises = []
         do {
-            let fetchedExercises = try await exerciseFiltered_call(selected_term: muscle)
+            let fetchedExercises = try await exerciseFiltered_call(selected_term: muscle, selected_equipment: equipment)
             self.exercises = fetchedExercises
             
         } catch {
@@ -163,51 +163,39 @@ struct ExercisePage: View {
             .frame(maxHeight: Spacing.l)
             
             NavigationStack {
-                VStack {
-                    HStack {
-                        VStack {
-                            Text("Select a Body Part").font(.Default)
-                            // selector for muscles
-                            if !viewModel.muscleGroups.isEmpty {
-                                Picker(selection: $selectedMuscle, label: Text(selectedMuscle ?? "Select a Body Part")) {
-                                    // Tag must match the selection type (String?)
-                                    ForEach(viewModel.muscleGroups, id: \.name) { muscle in
-                                        Text(muscle.name).tag(muscle.name as String?)
-                                    }
-                                }
-                                .pickerStyle(.menu)
-                            } else {
-                                ProgressView("Loading Muscles...")
+                Form{
+                    Section("Body Part & Equipment") {
+                        // selector for muscles
+                        Picker("Select body part", selection: $selectedMuscle) {
+                            // Tag must match the selection type (String?)
+                            ForEach(default_bodyParts, id: \.self) { part in
+                                Text(part).tag(part as String?)
                             }
                         }
-                        VStack {
-                            Text("Select equipment").font(.Default)
-                            // selector for body group
-                            if !viewModel.muscleGroups.isEmpty {
-                                Picker(selection: $selectedEquipment, label: Text(selectedEquipment ?? "Select equipment")) {
-                                    // Tag must match the selection type (String?)
-                                    ForEach(default_equipment, id:\.self) { equipment in
-                                        Text(equipment).tag(equipment as String?)
-                                    }
-                                }
-                                .pickerStyle(.menu)
-                            } else {
-                                ProgressView("Loading equipment...")
-                            }
-                        }
+                        .controlSize(.small)
+                        .pickerStyle(.menu)
                         
+                        // selector for body group
+                        Picker("Select equipment", selection: $selectedEquipment) {
+                            // Tag must match the selection type (String?)
+                            ForEach(default_equipment, id: \.self) { equipment in
+                                Text(equipment).tag(equipment as String?)
+                            }
+                        }
+                        .controlSize(.small)
+                        .pickerStyle(.menu)
                     }
-                }
-                .task {
-                    await viewModel.loadMuscles() // load in all muscles
-                }
+                } .listSectionSpacing(.compact)
             }
-            .frame(maxHeight: Spacing.xl * 2)
-            .searchable(text: $viewModel.searchText)
+            .frame(maxHeight: Spacing.xl * 2.5)
+            .searchable(
+                text: $viewModel.searchText,
+                placement: .navigationBarDrawer(displayMode: .automatic)
+            ) .controlSize(.small)
             
             ScrollView {
                 // Title of the current sections
-                Text(selectedMuscle ?? "No Muscle Group Selected")
+                Text(selectedMuscle ?? "No selected filters")
                     .font(.Default)
                     .fontWeight(.bold)
                 
@@ -227,14 +215,19 @@ struct ExercisePage: View {
             }
             .padding()
             // Trigger API call when selection changes
-            .onChange(of: selectedMuscle) { oldValue, newValue in
-                // newValue is the muscle the user just tapped
-                if let muscle = newValue {
-                    Task {
-                        await viewModel.loadExercises(muscle: muscle)
-                    }
-                }
+            .onChange(of: selectedMuscle) { _, _ in
+                refreshExercises()
             }
+            .onChange(of: selectedEquipment) { _, _ in
+                refreshExercises()
+            }
+        }
+    }
+    // equipment and body part filter included in search
+    func refreshExercises() {
+        guard let muscle = selectedMuscle else { return }
+        Task {
+            await viewModel.loadExercises( muscle: muscle, equipment: selectedEquipment ?? "")
         }
     }
 }
