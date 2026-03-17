@@ -32,13 +32,13 @@ struct GIFWebView: UIViewRepresentable {
 }
 
 // curate the exercise data return data to avoid pulling hundreds of useless exercises that no one does
-func exerciseFiltered_call(selected_term: String, selected_equipment: String) async throws-> [Exercise]{
+func exerciseFiltered_call(selected_term: String, selected_equipment: String, searchedTerm: String) async throws-> [Exercise]{
     // default equipment to avoid fetching exercises that are non-curated among gym community
     switch selected_term {
     case "shoulders", "cardio", "chest", "back" : // body-part
-        return try await service_advanced_getExercises(searchTerm: "", muscleGroup: "", bodyGroup: selected_term, equipment: selected_equipment.isEmpty ? default_equipment : [selected_equipment])
+        return try await service_advanced_getExercises(searchTerm: searchedTerm.isEmpty ? "" : searchedTerm, muscleGroup: "", bodyGroup: selected_term, equipment: selected_equipment.isEmpty ? default_equipment : [selected_equipment])
     case "abs", "forearms", "biceps", "triceps", "hamstrings", "quads", "calves", "glutes": // muscle-group
-        return try await service_advanced_getExercises(searchTerm: "", muscleGroup: selected_term, bodyGroup: "", equipment: selected_equipment.isEmpty ? default_equipment : [selected_equipment])
+        return try await service_advanced_getExercises(searchTerm: searchedTerm.isEmpty ? "" : searchedTerm, muscleGroup: selected_term, bodyGroup: "", equipment: selected_equipment.isEmpty ? default_equipment : [selected_equipment])
     default:
         return []
     }
@@ -60,10 +60,10 @@ class MuscleGroupViewModel: ObservableObject {
         }
     }
     @MainActor // This ensures everything inside updates the UI safely
-    func loadExercises(muscle: String, equipment: String) async {
+    func loadExercises(muscle: String, equipment: String, term: String) async {
         self.exercises = []
         do {
-            let fetchedExercises = try await exerciseFiltered_call(selected_term: muscle, selected_equipment: equipment)
+            let fetchedExercises = try await exerciseFiltered_call(selected_term: muscle, selected_equipment: equipment, searchedTerm: term)
             self.exercises = fetchedExercises
             
         } catch {
@@ -152,6 +152,7 @@ struct ExercisePage: View {
     @StateObject private var viewModel = MuscleGroupViewModel()
     @State private var selectedMuscle: String?
     @State private var selectedEquipment: String?
+    @State private var searchedTerm: String?
 
     var body: some View {
         VStack {
@@ -192,6 +193,10 @@ struct ExercisePage: View {
                 text: $viewModel.searchText,
                 placement: .navigationBarDrawer(displayMode: .automatic)
             ) .controlSize(.small)
+            // trigger exercise pull when user submits a search
+                .onSubmit(of: .search) {
+                    refreshExercises()
+                }
             
             ScrollView {
                 // Title of the current sections
@@ -225,9 +230,11 @@ struct ExercisePage: View {
     }
     // equipment and body part filter included in search
     func refreshExercises() {
-        guard let muscle = selectedMuscle else { return }
+        let muscle = selectedMuscle
+        let equipment = selectedEquipment
+        let searchedTerm = viewModel.searchText
         Task {
-            await viewModel.loadExercises( muscle: muscle, equipment: selectedEquipment ?? "")
+            await viewModel.loadExercises(muscle: muscle ?? "", equipment: equipment ?? "", term: searchedTerm)
         }
     }
 }

@@ -175,16 +175,21 @@ func service_advanced_getExercises(searchTerm: String, muscleGroup: String, body
         throw URLError(.badURL)
     }
     var queryItems: [URLQueryItem] = []
-    if !equipment.isEmpty { // add all exercises into query
+    if equipment.count > 1 { // add all exercises into query
         queryItems.append(contentsOf:
             equipment.map { item in
                 URLQueryItem(name: "equipment[]", value: item)
             }
         )
     }
+    else {
+        queryItems.append(URLQueryItem(name: "equipment", value: equipment[0]))
+    }
     let temp = [
         URLQueryItem(name: "limit", value: "25"),
+        // add seraached term to query parameters
         URLQueryItem(name: "search", value: searchTerm.isEmpty ? nil : searchTerm),
+        // either categorized as muscle group or body part
         URLQueryItem(name: "muscles", value: muscleGroup.isEmpty ? nil : muscleGroup),
         URLQueryItem(name: "bodyParts", value: bodyGroup.isEmpty ? nil : bodyGroup),
         URLQueryItem(name: "sortBy", value: "name"),
