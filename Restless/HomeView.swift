@@ -47,12 +47,14 @@ struct HomeView: View {
                 backgroundGradient.ignoresSafeArea()
                 Image("AppLogo")
             }
-            .frame(maxHeight: Spacing.xl)
+            .frame(maxHeight: Spacing.l)
+            Spacer()
             ZStack {
                 VStack (spacing: Spacing.m) {
                     Text("Welcome, Brian!")
                         .font(.Title)
                         .fontWeight(.bold)
+                        .foregroundStyle(Color.white.gradient)
                     // second section containing start workout button and template buttons
                     // button to start a untemplated workout
                     Button(action: startWorkout) {

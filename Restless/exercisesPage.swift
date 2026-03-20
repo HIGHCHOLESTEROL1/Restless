@@ -13,6 +13,10 @@ let Excolumns = [
     GridItem(.flexible())
 ]
 
+// add cache to store previously generated results
+// prevent api firing since free plan is limited :(
+private var cache: [String: [Exercise]] = [:]
+
 let default_equipment: Array<String> = ["cable", "assisted", "barbell", "dumbbell", "ez barbell", "olympic barbell",
                          "weighted", "smith machine", "body weight", "leverage machine"]
 let default_bodyParts: Array<String> = ["shoulders", "cardio", "chest", "back", "abs", "forearms", "biceps", "triceps", "hamstrings", "quads", "calves", "glutes"]
@@ -39,8 +43,8 @@ func exerciseFiltered_call(selected_term: String, selected_equipment: String, se
         return try await service_advanced_getExercises(searchTerm: searchedTerm.isEmpty ? "" : searchedTerm, muscleGroup: "", bodyGroup: selected_term, equipment: selected_equipment.isEmpty ? default_equipment : [selected_equipment])
     case "abs", "forearms", "biceps", "triceps", "hamstrings", "quads", "calves", "glutes": // muscle-group
         return try await service_advanced_getExercises(searchTerm: searchedTerm.isEmpty ? "" : searchedTerm, muscleGroup: selected_term, bodyGroup: "", equipment: selected_equipment.isEmpty ? default_equipment : [selected_equipment])
-    default:
-        return []
+    default: // no selected body part, in this case it just a user search
+        return try await service_advanced_getExercises(searchTerm: searchedTerm.isEmpty ? "" : searchedTerm , muscleGroup: "", bodyGroup: "", equipment: selected_equipment.isEmpty ? default_equipment : [selected_equipment])
     }
 }
 
@@ -50,6 +54,7 @@ class MuscleGroupViewModel: ObservableObject {
     @Published var muscleGroups: [Muscle] = []
     @Published var exercises: [Exercise] = []
     @Published var searchText: String = "" // for search bar
+    private var currentTask: Task<Void, Never>? // API task
     
     @MainActor
     func loadMuscles() async {
@@ -61,13 +66,18 @@ class MuscleGroupViewModel: ObservableObject {
     }
     @MainActor // This ensures everything inside updates the UI safely
     func loadExercises(muscle: String, equipment: String, term: String) async {
+        currentTask?.cancel() // cancel current task to prevent rate limit
         self.exercises = []
-        do {
-            let fetchedExercises = try await exerciseFiltered_call(selected_term: muscle, selected_equipment: equipment, searchedTerm: term)
-            self.exercises = fetchedExercises
-            
-        } catch {
-            print("Failed to load Exercises: \(error.localizedDescription)")
+        currentTask = Task {
+            try? await Task.sleep(nanoseconds: 300_000_000)
+            if Task.isCancelled {
+                return
+            }
+            do {
+                self.exercises = try await exerciseFiltered_call(selected_term: muscle, selected_equipment: equipment, searchedTerm: term)
+            } catch {
+                print("Failed to fethc exercises")
+            }
         }
     }
 }
@@ -200,10 +210,12 @@ struct ExercisePage: View {
             
             ScrollView {
                 // Title of the current sections
-                Text(selectedMuscle ?? "No selected filters")
-                    .font(.Default)
-                    .fontWeight(.bold)
-                
+                // only appears when no exercises are found
+                if (viewModel.exercises.isEmpty) {
+                    Text("No found exercises")
+                        .font(.Default)
+                        .fontWeight(.bold)
+                }
                 LazyVGrid(columns: Excolumns) {
                     // Use the exercises from your ViewModel
                     ForEach(viewModel.exercises, id: \.exerciseId) { exercise in
@@ -224,7 +236,10 @@ struct ExercisePage: View {
                 refreshExercises()
             }
             .onChange(of: selectedEquipment) { _, _ in
-                refreshExercises()
+                if selectedMuscle == nil {} // if no selected muscle group do nothing
+                else {
+                    refreshExercises()
+                }
             }
         }
     }
