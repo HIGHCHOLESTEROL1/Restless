@@ -141,7 +141,7 @@ func service_getExercises_muscle(muscleGroup: String) async throws -> [Exercise]
                 break
             }
             let exercisesData = try JSONDecoder().decode(ExerciseResponse.self, from: data)
-            if exercisesData.success {
+            if exercisesData.success && exercisesData.metadata.totalPages > 0 {
                 allExercises.append(contentsOf: exercisesData.data)
                 // get to next page
                 if let nextPath = exercisesData.metadata.nextPage {
@@ -155,8 +155,8 @@ func service_getExercises_muscle(muscleGroup: String) async throws -> [Exercise]
                 }
             }
             else{
-                print("API failure: fetch exercise[muscle]")
-                return []
+                // empty return
+                return allExercises
             }
         }
         return allExercises
@@ -207,7 +207,12 @@ func service_advanced_getExercises(searchTerm: String, muscleGroup: String, body
     do {
         // some responses can return multiple pages of data
         // Will iterate through each page until page is NULL fetching evry exercise
+        var pgCount = 0
+        var maxPage = 2
         while true{
+            if pgCount > maxPage {
+                break
+            }
             let (data, response) = try await URLSession.shared.data(from: url)
             guard let httpResponse = response as? HTTPURLResponse else {
                 break
@@ -221,7 +226,8 @@ func service_advanced_getExercises(searchTerm: String, muscleGroup: String, body
                 break
             }
             let exercisesData = try JSONDecoder().decode(ExerciseResponse.self, from: data)
-            if exercisesData.success {
+            if exercisesData.success && exercisesData.metadata.totalPages > 0{
+                pgCount += 1
                 allExercises.append(contentsOf: exercisesData.data)
                 // get to next page
                 if let nextPath = exercisesData.metadata.nextPage {
@@ -229,14 +235,13 @@ func service_advanced_getExercises(searchTerm: String, muscleGroup: String, body
                     guard let nextURL = URL(string: httpsPath) else { break }
                     url = nextURL
                     // Small delay to avoid rate limiting
-                    try await Task.sleep(nanoseconds: 100_000_000)
+                    try await Task.sleep(nanoseconds: 500_000_000)
                 } else {
                     break
                 }
             }
             else{
-                print("API failure: fetch exercise[muscle]")
-                return []
+                return allExercises
             }
         }
         return allExercises

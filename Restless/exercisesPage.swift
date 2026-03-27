@@ -24,14 +24,47 @@ let default_bodyParts: Array<String> = ["shoulders", "cardio", "chest", "back", 
 struct GIFWebView: UIViewRepresentable {
     let url: URL
 
+    func makeCoordinator() -> Coordinator {
+        Coordinator()
+    }
+
     func makeUIView(context: Context) -> WKWebView {
         let webView = WKWebView()
+        webView.navigationDelegate = context.coordinator
+        // Optional: keep the view visually unobtrusive when blank
+        webView.isOpaque = false
+        webView.backgroundColor = .clear
+        webView.scrollView.isScrollEnabled = false
         webView.load(URLRequest(url: url))
         return webView
     }
 
     func updateUIView(_ uiView: WKWebView, context: Context) {
         // No update needed for this simple case
+    }
+
+    class Coordinator: NSObject, WKNavigationDelegate {
+        // Intercept HTTP responses to catch 404/500/etc.
+        func webView(_ webView: WKWebView, decidePolicyFor navigationResponse: WKNavigationResponse, decisionHandler: @escaping (WKNavigationResponsePolicy) -> Void) {
+            if let httpResponse = navigationResponse.response as? HTTPURLResponse,
+               !(200...299).contains(httpResponse.statusCode) {
+                decisionHandler(.cancel)
+                // Load an empty document so no error page is shown
+                webView.loadHTMLString("", baseURL: nil)
+            } else {
+                decisionHandler(.allow)
+            }
+        }
+
+        // Handle provisional (initial) load failures, e.g., DNS/network errors
+        func webView(_ webView: WKWebView, didFailProvisionalNavigation navigation: WKNavigation!, withError error: Error) {
+            webView.loadHTMLString("", baseURL: nil)
+        }
+
+        // Handle later-stage navigation failures
+        func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) {
+            webView.loadHTMLString("", baseURL: nil)
+        }
     }
 }
 
@@ -67,12 +100,12 @@ class MuscleGroupViewModel: ObservableObject {
     @MainActor // This ensures everything inside updates the UI safely
     func loadExercises(muscle: String, equipment: String, term: String) async {
         currentTask?.cancel() // cancel current task to prevent rate limit
-        self.exercises = []
         currentTask = Task {
             try? await Task.sleep(nanoseconds: 300_000_000)
             if Task.isCancelled {
                 return
             }
+            self.exercises = []
             do {
                 self.exercises = try await exerciseFiltered_call(selected_term: muscle, selected_equipment: equipment, searchedTerm: term)
             } catch {
