@@ -40,18 +40,6 @@ enum Spacing {
     static let xl: CGFloat = 100
 }
 
-// class for exercises
-struct Exercise {
-    let exerciseID: String
-    let name: String
-    let gifUrl: URL
-    let targetMuscles: Array<String>
-    let bodyParts: Array<String>
-    let equipments: Array<String>
-    let secondaryMuscles: Array<String>
-    let instructions: Array<String>
-}
-
 // class for a food
 struct Food {
     let name: String

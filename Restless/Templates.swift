@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-// default templated workouts 3 per
+// default templated workouts 2 per
 let columns = [
     GridItem(.flexible()),
     GridItem(.flexible())

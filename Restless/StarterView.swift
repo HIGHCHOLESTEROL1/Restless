@@ -37,10 +37,10 @@ struct StarterView: View{
         }
         // once starter state has been displayed, toggle to true
         .onAppear {
-            DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-                // animation
-                withAnimation(Animation.easeInOut(duration: 0.5)) {
-                    starterFinished.toggle()
+            Task {
+                try? await Task.sleep(nanoseconds: 2_000_000_000) // 2 seconds
+                    withAnimation(.easeInOut(duration: 0.5)) { // animation
+                        starterFinished = true
                 }
             }
         }
