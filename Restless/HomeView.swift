@@ -59,14 +59,12 @@ struct HomeView: View {
                     // button to start a untemplated workout
                     Button(action: startWorkout) {
                         // decor for the button
-                        HStack{
-                            Label("START A NEW WORKOUT", systemImage: "play.circle")
-                                .foregroundStyle(Color.white.gradient)
-                                .fontWeight(.bold)
-                                .padding()
-                                .background(Color.blue)
-                                .cornerRadius(10) // rounded corners
-                        }
+                        Label("START A NEW WORKOUT", systemImage: "play.circle")
+                            .foregroundStyle(Color.white.gradient)
+                            .fontWeight(.bold)
+                            .padding()
+                            .background(Color.blue)
+                            .cornerRadius(10) // rounded corners
                     }
                 }
             }

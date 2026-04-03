@@ -9,47 +9,67 @@ import SwiftUI
 class LoginViewModel: ObservableObject {
     @Published var email: String = ""
     @Published var password: String = ""
-    @Published var showField: Bool = false
+    @Published var dontShowField: Bool = true
     @Published var keepLogged: Bool = false
+    @Published var auth = false
 }
+
+func login() {}
 
 struct LoginView: View {
     @StateObject var viewModel = LoginViewModel()
     var body: some View {
-        VStack(alignment: .center) {
-            Spacer()
-            Text("Sign in")
-                .font(.Title)
-                .fontWeight(.bold)
-            Text("create an account")
-            // login field
-            Form {
-                Section("Username") { // username
-                    TextField("Email", text: $viewModel.email)
-                }
-                Section("Password"){ // password section
+        NavigationStack {
+            VStack(alignment: .center) {
+                Spacer()
+                Text("Sign in")
+                    .font(.largeTitle)
+                    .fontWeight(.bold)
+                Text("create an account").font(.callout)
+                // login field
+                Form {
+                    Section("Username") { // username
+                        TextField("Email", text: $viewModel.email)
+                    }
+                    Section("Password"){ // password section
+                        HStack {
+                            // trigger for showing typed password
+                            if viewModel.dontShowField {
+                                SecureField("Password", text: $viewModel.password)
+                            }
+                            else {
+                                TextField("Password", text: $viewModel.password)
+                            }
+                            Toggle("Show", isOn: $viewModel.dontShowField).toggleStyle(.button)
+                        }
+                    }
                     HStack {
-                        // trigger for showing typed password
-                        if !viewModel.showField {
-                            TextField("Password", text: $viewModel.password)
-                        }
-                        else {
-                            SecureField("Password", text: $viewModel.password)
-                        }
-                        Toggle("Show", isOn: $viewModel.showField).toggleStyle(.button)
+                        Toggle("Remember me", isOn: $viewModel.keepLogged)
+                            .font(.callout)
+                            .toggleStyle(.button)
+                        Spacer()
+                        Text("Forgot Password")
+                            .font(.callout)
                     }
-                    }
-                
-                Toggle("Keep me logged in", isOn: $viewModel.keepLogged)
-                        .toggleStyle(.switch)
-                // login button
-                Button("login") { }
+                }
+                .scrollDisabled(true)
+                .cornerRadius(20)
+                .padding()
+                Spacer()
             }
-            .scrollDisabled(true)
-            .padding()
-            Spacer()
         }
-        .padding()
+        .toolbar {
+            ToolbarItem(placement: .bottomBar) {
+                Button(action: login) {
+                    Text("Login")
+                        .foregroundStyle(Color.white.gradient)
+                        .fontWeight(.bold)
+                        .frame(minWidth: 300)
+                }
+                .cornerRadius(10)
+                .buttonStyle(.borderedProminent)
+            }
+        }
     }
 }
 
