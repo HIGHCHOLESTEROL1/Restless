@@ -12,6 +12,8 @@
 		2518391F2EA2E1A1009D7808 /* FirebaseAnalyticsCore in Frameworks */ = {isa = PBXBuildFile; productRef = 2518391E2EA2E1A1009D7808 /* FirebaseAnalyticsCore */; };
 		251839212EA2E1A1009D7808 /* FirebaseAnalyticsIdentitySupport in Frameworks */ = {isa = PBXBuildFile; productRef = 251839202EA2E1A1009D7808 /* FirebaseAnalyticsIdentitySupport */; };
 		251839232EA2E1A1009D7808 /* FirebaseAppCheck in Frameworks */ = {isa = PBXBuildFile; productRef = 251839222EA2E1A1009D7808 /* FirebaseAppCheck */; };
+		253D7C852F80612100E1339C /* Auth in Frameworks */ = {isa = PBXBuildFile; productRef = 253D7C842F80612100E1339C /* Auth */; };
+		253D7C892F80612100E1339C /* PostgREST in Frameworks */ = {isa = PBXBuildFile; productRef = 253D7C882F80612100E1339C /* PostgREST */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -62,7 +64,9 @@
 			files = (
 				251839212EA2E1A1009D7808 /* FirebaseAnalyticsIdentitySupport in Frameworks */,
 				2518391D2EA2E1A1009D7808 /* FirebaseAnalytics in Frameworks */,
+				253D7C852F80612100E1339C /* Auth in Frameworks */,
 				2518391F2EA2E1A1009D7808 /* FirebaseAnalyticsCore in Frameworks */,
+				253D7C892F80612100E1339C /* PostgREST in Frameworks */,
 				251839232EA2E1A1009D7808 /* FirebaseAppCheck in Frameworks */,
 				2518391B2EA2E1A1009D7808 /* FirebaseAI in Frameworks */,
 			);
@@ -130,6 +134,8 @@
 				2518391E2EA2E1A1009D7808 /* FirebaseAnalyticsCore */,
 				251839202EA2E1A1009D7808 /* FirebaseAnalyticsIdentitySupport */,
 				251839222EA2E1A1009D7808 /* FirebaseAppCheck */,
+				253D7C842F80612100E1339C /* Auth */,
+				253D7C882F80612100E1339C /* PostgREST */,
 			);
 			productName = Restless;
 			productReference = 256D3C692E833C01009FDC78 /* Restless.app */;
@@ -215,6 +221,7 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				251839192EA2E1A1009D7808 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
+				253D7C832F80612100E1339C /* XCRemoteSwiftPackageReference "supabase-swift" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 256D3C6A2E833C01009FDC78 /* Products */;
@@ -585,6 +592,14 @@
 				minimumVersion = 12.4.0;
 			};
 		};
+		253D7C832F80612100E1339C /* XCRemoteSwiftPackageReference "supabase-swift" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/supabase/supabase-swift";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.5.1;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -612,6 +627,16 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 251839192EA2E1A1009D7808 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
 			productName = FirebaseAppCheck;
+		};
+		253D7C842F80612100E1339C /* Auth */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 253D7C832F80612100E1339C /* XCRemoteSwiftPackageReference "supabase-swift" */;
+			productName = Auth;
+		};
+		253D7C882F80612100E1339C /* PostgREST */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 253D7C832F80612100E1339C /* XCRemoteSwiftPackageReference "supabase-swift" */;
+			productName = PostgREST;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

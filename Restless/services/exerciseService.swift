@@ -208,7 +208,7 @@ func service_advanced_getExercises(searchTerm: String, muscleGroup: String, body
         // some responses can return multiple pages of data
         // Will iterate through each page until page is NULL fetching evry exercise
         var pgCount = 0
-        var maxPage = 2
+        let maxPage = 2
         while true{
             if pgCount > maxPage {
                 break

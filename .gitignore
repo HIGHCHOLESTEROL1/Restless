@@ -1,4 +1,5 @@
-Restless/GoogleService-Info.plist
+GoogleService-Info.plist
+Restless/services/Keys.plist
 
 .DS_Store
 
@@ -6,4 +7,3 @@ xcuserdata/
 *.xcuserstate
 DerivedData/
 build/
-Restless/services/Keys.plist
