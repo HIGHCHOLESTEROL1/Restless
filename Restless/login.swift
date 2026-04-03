@@ -9,7 +9,7 @@ import SwiftUI
 class LoginViewModel: ObservableObject {
     @Published var email: String = ""
     @Published var password: String = ""
-    @Published var dontShowField: Bool = true
+    @Published var showPassword: Bool = false
     @Published var keepLogged: Bool = false
     @Published var auth = false
 }
@@ -30,17 +30,25 @@ struct LoginView: View {
                 Form {
                     Section("Username") { // username
                         TextField("Email", text: $viewModel.email)
+                            .textInputAutocapitalization(.never)
+                            .autocorrectionDisabled()
+                            .keyboardType(.emailAddress)
+                            .textContentType(.emailAddress)
                     }
                     Section("Password"){ // password section
                         HStack {
                             // trigger for showing typed password
-                            if viewModel.dontShowField {
-                                SecureField("Password", text: $viewModel.password)
+                            if viewModel.showPassword {
+                                TextField("Password", text: $viewModel.password)
+                                    .textContentType(.password)
+                                    .privacySensitive()
                             }
                             else {
-                                TextField("Password", text: $viewModel.password)
+                                SecureField("Password", text: $viewModel.password)
+                                    .textContentType(.password)
+                                    .privacySensitive()
                             }
-                            Toggle("Show", isOn: $viewModel.dontShowField).toggleStyle(.button)
+                            Toggle("Show", isOn: $viewModel.showPassword).toggleStyle(.button)
                         }
                     }
                     HStack {
