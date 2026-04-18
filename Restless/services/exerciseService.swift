@@ -18,11 +18,11 @@ extension CharacterSet {
 
 // api meta data
 struct Metadata: Decodable {
-    let totalPages: Int
-    let totalExercises: Int
-    let currentPage: Int
-    let previousPage: String? // handle nulls in case none
-    let nextPage: String?
+    let total: Int
+    let hasNextPage: Bool
+    let hasPreviousPage: Bool
+    let previousCursor: String? // handle nulls in case none
+    let nextCursor: String?
 }
 
 // classes for muscle groups
@@ -37,7 +37,7 @@ struct Muscle: Codable {
 // class for exercises
 struct ExerciseResponse: Decodable {
     let success: Bool
-    let metadata: Metadata
+    let meta: Metadata
     let data: [Exercise]
 }
 
@@ -96,7 +96,7 @@ struct exerciseView: View {
 
 // fetches all muscle groups
 func service_allMuscles() async throws -> [Muscle] {
-    let url = URL(string: "https://www.exercisedb.dev/api/v1/muscles")!
+    let url = URL(string: "https://oss.exercisedb.dev/api/v1/muscles")!
     let (data, _) = try await URLSession.shared.data(from: url)
     do {
         let musclesData = try JSONDecoder().decode(MuscleResponse.self, from: data)
@@ -116,12 +116,27 @@ func service_allMuscles() async throws -> [Muscle] {
 
 // fetch all exercises by muscleGroup
 func service_getExercises_muscle(muscleGroup: String) async throws -> [Exercise] {
-    let baseURL = "https://www.exercisedb.dev/api/v1/muscles/"
-    guard let encodedGroup = muscleGroup.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed),
-          var url = URL(string: baseURL + encodedGroup + "/exercises" + "?limit=25")
-    else {
-        return []
+    let baseURL = "https://oss.exercisedb.dev/api/v1/exercises/muscles"
+    guard var components = URLComponents(string: baseURL) else {
+        throw URLError(.badURL)
     }
+    
+    // repeatdely make urls for page after page
+    func makeURL(after: String?) -> URL? {
+        components.queryItems = [
+            URLQueryItem(name: "limit", value: "25"),
+            // query parameter, the filters added
+            URLQueryItem(name: "targetMuscles", value: muscleGroup.isEmpty ? nil : muscleGroup),
+            URLQueryItem(name: "after", value: after ?? ""),
+            URLQueryItem(name: "before", value: "")
+        ]
+        return components.url
+    }
+
+    guard var url = makeURL(after: nil) else {
+        throw URLError(.badURL)
+    }
+
     // initial response
     var allExercises : [Exercise] = []
     do {
@@ -140,13 +155,17 @@ func service_getExercises_muscle(muscleGroup: String) async throws -> [Exercise]
                 print("Bad status:", httpResponse.statusCode)
                 break
             }
+            
             let exercisesData = try JSONDecoder().decode(ExerciseResponse.self, from: data)
-            if exercisesData.success && exercisesData.metadata.totalPages > 0 {
-                allExercises.append(contentsOf: exercisesData.data)
+            guard exercisesData.success else {
+                break
+            }
+            
+            allExercises.append(contentsOf: exercisesData.data)
+            if exercisesData.meta.hasNextPage {
                 // get to next page
-                if let nextPath = exercisesData.metadata.nextPage {
-                    let httpsPath = nextPath.replacingOccurrences(of: "http://", with: "https://") // force https cause for some reason API changes it
-                    guard let nextURL = URL(string: httpsPath + "?limit=25") else { break }
+                if let nextPath = exercisesData.meta.nextCursor {
+                    guard let nextURL = makeURL(after: nextPath) else { break }
                     url = nextURL
                     // Small delay to avoid rate limiting
                     try await Task.sleep(nanoseconds: 100_000_000)
@@ -170,38 +189,30 @@ func service_getExercises_muscle(muscleGroup: String) async throws -> [Exercise]
 // advanced filtering search
 func service_advanced_getExercises(searchTerm: String, muscleGroup: String, bodyGroup: String,
                                    equipment: Array<String>) async throws -> [Exercise] {
-    let baseURL = "https://www.exercisedb.dev/api/v1/exercises/filter"
+    let baseURL = "https://oss.exercisedb.dev/api/v1/exercises"
     guard var components = URLComponents(string: baseURL) else {
         throw URLError(.badURL)
     }
-    var queryItems: [URLQueryItem] = []
-    if equipment.count > 1 { // add all exercises into query
-        queryItems.append(contentsOf:
-            equipment.map { item in
-                URLQueryItem(name: "equipment[]", value: item)
-            }
-        )
+    let equipmentValue = equipment.isEmpty ? nil : equipment.joined(separator: ",")
+    // repeatdely make urls for page after page
+    func makeURL(after: String?) -> URL? {
+        components.queryItems = [
+            URLQueryItem(name: "limit", value: "25"),
+            // query parameter, the filters added
+            URLQueryItem(name: "name", value: searchTerm.isEmpty ? nil : searchTerm),
+            URLQueryItem(name: "targetMuscles", value: muscleGroup.isEmpty ? nil : muscleGroup),
+            URLQueryItem(name: "bodyParts", value: bodyGroup.isEmpty ? nil : bodyGroup),
+            URLQueryItem(name: "equipments", value: equipmentValue),
+            URLQueryItem(name: "after", value: ""),
+            URLQueryItem(name: "before", value: "")
+        ]
+        return components.url
     }
-    else {
-        queryItems.append(URLQueryItem(name: "equipment", value: equipment[0]))
-    }
-    let temp = [
-        URLQueryItem(name: "limit", value: "25"),
-        // add seraached term to query parameters
-        URLQueryItem(name: "search", value: searchTerm.isEmpty ? nil : searchTerm),
-        // either categorized as muscle group or body part
-        URLQueryItem(name: "muscles", value: muscleGroup.isEmpty ? nil : muscleGroup),
-        URLQueryItem(name: "bodyParts", value: bodyGroup.isEmpty ? nil : bodyGroup),
-        URLQueryItem(name: "sortBy", value: "name"),
-        URLQueryItem(name: "sortOrder", value: "asc")
-    ]
-    queryItems.append(contentsOf: temp)
-    components.queryItems = queryItems
 
-    guard var url = components.url else {
+    guard var url = makeURL(after: nil) else {
         throw URLError(.badURL)
     }
-    print(url)
+    
     // initial response
     var allExercises : [Exercise] = []
     do {
@@ -226,13 +237,18 @@ func service_advanced_getExercises(searchTerm: String, muscleGroup: String, body
                 break
             }
             let exercisesData = try JSONDecoder().decode(ExerciseResponse.self, from: data)
-            if exercisesData.success && exercisesData.metadata.totalPages > 0{
+            guard exercisesData.success else {
+                break
+            }
+
+            allExercises.append(contentsOf: exercisesData.data)
+
+            if exercisesData.meta.hasNextPage {
                 pgCount += 1
-                allExercises.append(contentsOf: exercisesData.data)
                 // get to next page
-                if let nextPath = exercisesData.metadata.nextPage {
+                if let nextPath = exercisesData.meta.nextCursor {
                     let httpsPath = nextPath.replacingOccurrences(of: "http://", with: "https://") // force https cause for some reason API changes it
-                    guard let nextURL = URL(string: httpsPath) else { break }
+                    guard let nextURL = makeURL(after: nextPath) else { break }
                     url = nextURL
                     // Small delay to avoid rate limiting
                     try await Task.sleep(nanoseconds: 500_000_000)
