@@ -9,9 +9,12 @@ import SwiftUI
 
 @main
 struct RestlessApp: App {
+    @StateObject private var authManager = AuthManager.shared
+
     var body: some Scene {
         WindowGroup {
             StarterView()
+                .environmentObject(authManager)
         }
     }
 }

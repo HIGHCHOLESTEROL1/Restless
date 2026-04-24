@@ -27,10 +27,13 @@ struct StartView: View {
 // initial starting screen (3 secs)
 struct StarterView: View{
     @State var starterFinished: Bool = false // starter state
+    @EnvironmentObject private var authManager: AuthManager
+
     var body: some View {
         Group{
             if starterFinished {
-                MainTabView().transition(.move(edge: .trailing))
+                authContent
+                    .transition(.move(edge: .trailing))
             } else {
                 StartView().transition(.move(edge: .leading))
             }
@@ -43,6 +46,17 @@ struct StarterView: View{
                         starterFinished = true
                 }
             }
+        }
+    }
+
+    @ViewBuilder
+    private var authContent: some View {
+        if authManager.isRestoringSession {
+            ProgressView("Loading account...")
+        } else if authManager.isAuthenticated {
+            MainTabView()
+        } else {
+            LoginView()
         }
     }
 }
