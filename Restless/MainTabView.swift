@@ -18,6 +18,10 @@ struct MainTabView: View {
                 .tabItem {
                     Label("Exercises", systemImage: "dumbbell")
                 }
+            ProfileView()
+                .tabItem {
+                    Label("Profile", systemImage: "person")
+                }
             HistoryPage()
                 .tabItem {
                     Label("History", systemImage: "clock")

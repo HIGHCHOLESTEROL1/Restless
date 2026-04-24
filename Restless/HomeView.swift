@@ -107,15 +107,6 @@ struct HomeView: View {
                     .padding(5)
             }
         }
-        .toolbar { // sign out button
-            ToolbarItem(placement: .topBarTrailing) {
-                Button("Sign Out") {
-                    Task {
-                        try? await authManager.signOut()
-                    }
-                }
-            }
-        }
     }
 }
 
