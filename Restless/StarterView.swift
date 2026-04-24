@@ -62,5 +62,5 @@ struct StarterView: View{
 }
 
 #Preview {
-    StarterView()
+    StarterView().environmentObject(AuthManager.shared)
 }

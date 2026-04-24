@@ -35,9 +35,22 @@
 		256D3C802E833C03009FDC78 /* RestlessUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = RestlessUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		25F953722F9B7AC000703578 /* Exceptions for "Restless" folder in "Restless" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 256D3C682E833C01009FDC78 /* Restless */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		256D3C6B2E833C01009FDC78 /* Restless */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				25F953722F9B7AC000703578 /* Exceptions for "Restless" folder in "Restless" target */,
+			);
 			path = Restless;
 			sourceTree = "<group>";
 		};
@@ -421,6 +434,7 @@
 				DEVELOPMENT_TEAM = 87ST69F9HD;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Restless/Info.plist;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.healthcare-fitness";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -450,6 +464,7 @@
 				DEVELOPMENT_TEAM = 87ST69F9HD;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Restless/Info.plist;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.healthcare-fitness";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;

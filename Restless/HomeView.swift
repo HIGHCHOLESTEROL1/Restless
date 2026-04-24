@@ -40,6 +40,8 @@ func navigateToHistory(){
 
 // base home view
 struct HomeView: View {
+    @EnvironmentObject private var authManager: AuthManager
+
     var body: some View {
         VStack {
             // Header
@@ -51,8 +53,8 @@ struct HomeView: View {
             Spacer()
             ZStack {
                 VStack (spacing: Spacing.m) {
-                    Text("Welcome, Brian!")
-                        .font(.Title)
+                    Text("Welcome, \(authManager.currentUserEmail?.split(separator: "@")[0] ?? "User")!")
+                        .font(.Title2)
                         .fontWeight(.bold)
                         .foregroundStyle(Color.white.gradient)
                     // second section containing start workout button and template buttons
@@ -105,11 +107,20 @@ struct HomeView: View {
                     .padding(5)
             }
         }
+        .toolbar { // sign out button
+            ToolbarItem(placement: .topBarTrailing) {
+                Button("Sign Out") {
+                    Task {
+                        try? await authManager.signOut()
+                    }
+                }
+            }
+        }
     }
 }
 
 // group view to allow transitions
     
 #Preview {
-    HomeView()
+    HomeView().environmentObject(AuthManager.shared)
 }
