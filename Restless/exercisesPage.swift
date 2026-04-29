@@ -174,7 +174,7 @@ struct ExerciseBlock: View {
                 ScrollView {
                     VStack(alignment: .leading, spacing: 10) { // iterate each instruction
                         ForEach(instructions, id: \.self) { instruction in
-                            Text(instruction)
+                            Text("Step " + instruction.split(separator: ":")[1])
                         }
                         // gif for the exercise
                         GIFWebView(url: image)

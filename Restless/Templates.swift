@@ -13,10 +13,56 @@ let columns = [
     GridItem(.flexible())
 ]
 
+struct WorkoutTemplateData: Identifiable {
+    let id = UUID()
+    let title: String
+    let exercises: [String]
+}
+
+let beginnerWorkoutTemplates: [WorkoutTemplateData] = [
+    WorkoutTemplateData(
+        title: "Push Day",
+        exercises: [
+            "Barbell Bench Press",
+            "Incline Dumbbell Press",
+            "Seated Shoulder Press",
+            "Cable Chest Fly",
+            "Lateral Raise",
+            "Tricep Pushdown",
+            "Overhead Tricep Extension"
+        ]
+    ),
+    WorkoutTemplateData(
+        title: "Pull Day",
+        exercises: [
+            "Lat Pulldown",
+            "Seated Cable Row",
+            "Chest Supported Row",
+            "Single Arm Dumbbell Row",
+            "Face Pull",
+            "EZ Bar Curl",
+            "Hammer Curl"
+        ]
+    ),
+    WorkoutTemplateData(
+        title: "Leg Day",
+        exercises: [
+            "Barbell Back Squat",
+            "Romanian Deadlift",
+            "Leg Press",
+            "Walking Lunges",
+            "Leg Extension",
+            "Hamstring Curl",
+            "Standing Calf Raise"
+        ]
+    )
+]
+
 // default struct for each template, name, exercises, etc
 struct Template: View {
     let title: String
     let numExercises: Int
+    var onTap: (() -> Void)?
     
     var body: some View {
         HStack {
@@ -46,12 +92,14 @@ struct Template: View {
         
         // functionality when user clicks on to a template
         .onTapGesture {
-            print("\(title) template clicked")
+            onTap?()
         }
     }
 }
 
 struct TemplateView: View {
+    var onBeginnerWorkoutSelected: ((WorkoutTemplateData) -> Void)?
+
     var body: some View {
         VStack(alignment: .leading, spacing: Spacing.m) {
             VStack(alignment: .leading, spacing: Spacing.s) {
@@ -61,10 +109,11 @@ struct TemplateView: View {
                     .fontWeight(.bold)
                 // non custom templates (standard 3 that will always exist)
                 LazyVGrid(columns: columns) {
-                    // temporary for now just for UI design
-                    Template(title: "Push Day", numExercises: 7)
-                    Template(title: "Pull Day", numExercises: 7)
-                    Template(title: "Leg Day", numExercises: 7)
+                    ForEach(beginnerWorkoutTemplates) { template in
+                        Template(title: template.title, numExercises: template.exercises.count) {
+                            onBeginnerWorkoutSelected?(template)
+                        }
+                    }
                 } .frame(maxWidth: .infinity)
                 
                 Text("Your Templates")

@@ -37,10 +37,10 @@ func navigateToHistory(){
     print("navigate to history page pressed")
 }
 
-
 // base home view
 struct HomeView: View {
     @EnvironmentObject private var authManager: AuthManager
+    @State private var selectedWorkoutTemplate: WorkoutTemplateData?
 
     var body: some View {
         VStack {
@@ -103,8 +103,15 @@ struct HomeView: View {
             }
             ScrollView {
                 // templates
-                TemplateView()
+                TemplateView { template in
+                    selectedWorkoutTemplate = template
+                }
                     .padding(5)
+            }
+        }
+        .sheet(item: $selectedWorkoutTemplate) { template in
+            WorkoutSessionSheet(template: template) {
+                selectedWorkoutTemplate = nil
             }
         }
     }
